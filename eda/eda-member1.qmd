@@ -1,5 +1,23 @@
 ---
-title: "Member 1 First Name & Last Name Initial"
+title: "MTA Subway Stations"
 ---
 
-Your exploratory data analysis of the team datasets go here.
+```{r include=FALSE}
+stations <- utils::read.csv("../data/raw/MTA_Subway_Stations (1).csv")
+```
+
+```{r}
+library(leaflet)
+library(sf)
+library(dplyr)
+library(tidyr)
+
+stations_sf <- stations |> 
+  mutate(geometry = st_as_sfc(Georeference)) |> 
+  st_as_sf()
+
+leaflet(stations_sf) |> 
+  addTiles() |> 
+  addMarkers()
+```
+
