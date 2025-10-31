@@ -1,5 +1,7 @@
 ---
-title: "Proposal"
+title: "Project Proposal"
 ---
 
-Your proposal go here.
+Our project aims to answer the following research questions: How accessible are subway stations across New York City? Are accessible subways concentrated in a particular part of the city or are they distributed across the city? Does accessibility affect ridership of certain subway lines? We will define accessible subway stations as stations with elevators and an auto-gate. Since the 1980's, the MTA has gradually renovated stations to be physically accessible but even 40 years later there is much room for improvement. The MTA has claimed that it will make 95% of subways accessible by 2055, but persons with disabilities are hoping for quicker results. Our project will try to uncover if there are better locations for people in need of accessible train stations to reside and where they are actually able to travel. A person may have an accessible train station near them but may be unable to reach a certain part of the city. 
+
+The project will incorporate spatial/geo plots, an interactive map, and statistical testing methods.  
