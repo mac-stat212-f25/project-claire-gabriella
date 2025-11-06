@@ -21,3 +21,17 @@ leaflet(stations_sf) |>
   addMarkers()
 ```
 
+Make buffers around train stations with a dist of 1200, to find areas of inaccessibility farther than a 15 minute walk.
+
+https://cran.r-project.org/web/packages/osmdata/vignettes/osmdata.html
+
+```{r}
+library(tidyverse)
+buffers <- st_buffer(stations_sf, dist = 1200)
+
+ggplot(buffers) +
+  geom_sf()
+```
+
+
+
