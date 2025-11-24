@@ -1,37 +1,51 @@
 ---
-title: "MTA Subway Stations"
+title: "msg"
+format: html
 ---
 
-```{r include=FALSE}
-stations <- utils::read.csv("../data/raw/MTA_Subway_Stations (1).csv")
-```
-
 ```{r}
-library(leaflet)
-library(sf)
+library(readr)
+library(stringr)
 library(dplyr)
-library(tidyr)
+library(lubridate)
+library(tidytext)
+df <- readRDS("msg_df.rds")
 
-stations_sf <- stations |> 
-  mutate(geometry = st_as_sfc(Georeference)) |> 
-  st_as_sf()
+df <- df %>%
+  mutate(
+    date = ymd_hms(date),
+    year  = year(date),
+    month = month(date),
+    day   = day(date),
+    time  = format(date, "%H:%M:%S")
+  )
 
-leaflet(stations_sf) |> 
-  addTiles() |> 
-  addMarkers()
+df$id <- 1:nrow(df)
+
+word_counts <- df %>%
+  unnest_tokens(word, text) %>% 
+  count(id, word, sort = TRUE)
+
+word_counts %>%
+  bind_tf_idf(term = word, document = id, n)
 ```
-
-Make buffers around train stations with a dist of 1200, to find areas of inaccessibility farther than a 15 minute walk.
-
-https://cran.r-project.org/web/packages/osmdata/vignettes/osmdata.html
 
 ```{r}
-library(tidyverse)
-buffers <- st_buffer(stations_sf, dist = 1200)
-
-ggplot(buffers) +
-  geom_sf()
+df$id <- seq_len(nrow(df))   
+tfidf <- df %>%
+  unnest_tokens(word, text) %>%
+  count(id, word) %>%
+  bind_tf_idf(word, id, n)
+df_joined <- df %>%
+  left_join(tfidf %>% group_by(id) %>% summarise(tfidf = list(cur_data_all())),
+            by = "id")
+df_tidy <- df %>% left_join(tfidf, by = "id")
 ```
 
+```{r}
+library(Matrix)
 
+tfidf_matrix <- tfidf %>%
+  cast_sparse(id, word, tf_idf)
+```
 
