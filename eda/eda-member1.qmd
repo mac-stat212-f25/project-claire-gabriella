@@ -3,6 +3,10 @@ title: "msg"
 format: html
 ---
 
+High scores are given to words that are frequent in a single document (high TF) but rare in the overall corpus (high IDF). These words are often considered the most important or "telling" words for that document. 
+Low TF-IDF scores are given to words that are either not very frequent in the document or are very common across all documents. 
+
+
 ```{r eval=FALSE}
 # Code to clean and convert into matrix
 library(readr)
@@ -33,7 +37,7 @@ word_counts <- word_counts %>%
   bind_tf_idf(term = word, document = id, n)
 
 word_counts <- word_counts |> 
-  filter(str_length(word) > 10)
+  filter(str_length(word) > 5)
 
 word_counts %>% 
   slice_max(tf_idf, n = 15) %>% 
@@ -41,7 +45,6 @@ word_counts %>%
   ggplot(aes(tf_idf, word)) +
   geom_col(show.legend = FALSE) +
   labs(x = "tf-idf", y = NULL) 
-
 ```
 
 ```{r eval=FALSE}

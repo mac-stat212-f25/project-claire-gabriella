@@ -2,14 +2,14 @@
 title: "Calendar"
 ---
 
-```{r}
+```{r margaux-test}
 library(dplyr)
 library(lubridate)
 library(stringr)
 library(readr)
 
 # MARGAUX 
-margaux <- readRDS("../data/processed/msg_df.rds")
+margaux <- readRDS("../data/processed/margaux.rds")
 
 margaux <- margaux %>%
   mutate(
@@ -33,7 +33,7 @@ margaux <- margaux %>%
 #   bind_tf_idf(term = word, document = id, n)
 ```
 
-```{r}
+```{r eval=FALSE}
 # JADE
 jade <- read_csv("../data/processed/jade.csv")
 
@@ -50,7 +50,7 @@ jade <- jade %>%
   ))
 ```
 
-```{r}
+```{r eval=FALSE}
 # YAMILA
 yami <- read_csv("../data/processed/yamila.csv")
 
