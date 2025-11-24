@@ -3,13 +3,14 @@ title: "msg"
 format: html
 ---
 
-```{r}
+```{r eval=FALSE}
+# Code to clean and convert into matrix
 library(readr)
 library(stringr)
 library(dplyr)
 library(lubridate)
 library(tidytext)
-df <- readRDS("msg_df.rds")
+df <- readRDS("../msg_df.rds")
 
 df <- df %>%
   mutate(
