@@ -31,7 +31,7 @@ word_counts %>%
   bind_tf_idf(term = word, document = id, n)
 ```
 
-```{r}
+```{r eval=FALSE}
 df$id <- seq_len(nrow(df))   
 tfidf <- df %>%
   unnest_tokens(word, text) %>%
@@ -43,7 +43,7 @@ df_joined <- df %>%
 df_tidy <- df %>% left_join(tfidf, by = "id")
 ```
 
-```{r}
+```{r eval=FALSE}
 library(Matrix)
 
 tfidf_matrix <- tfidf %>%
