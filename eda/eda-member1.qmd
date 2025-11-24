@@ -10,7 +10,9 @@ library(stringr)
 library(dplyr)
 library(lubridate)
 library(tidytext)
-df <- readRDS("../msg_df.rds")
+library(ggplot2)
+
+df <- readRDS("../data/processed/jade.rds")
 
 df <- df %>%
   mutate(
@@ -27,8 +29,19 @@ word_counts <- df %>%
   unnest_tokens(word, text) %>% 
   count(id, word, sort = TRUE)
 
-word_counts %>%
+word_counts <- word_counts %>%
   bind_tf_idf(term = word, document = id, n)
+
+word_counts <- word_counts |> 
+  filter(str_length(word) > 10)
+
+word_counts %>% 
+  slice_max(tf_idf, n = 15) %>% 
+  mutate(word = reorder(word, tf_idf)) %>%
+  ggplot(aes(tf_idf, word)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = "tf-idf", y = NULL) 
+
 ```
 
 ```{r eval=FALSE}
