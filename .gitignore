@@ -69,3 +69,4 @@ _freeze/
 *.log
 *.aux
 *.toc
+/data/processed

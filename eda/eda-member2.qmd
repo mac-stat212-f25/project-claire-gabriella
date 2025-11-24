@@ -67,23 +67,6 @@ yami <- yami %>%
   ))
 ```
 
-```{r}
-# ETHAN
-ethan <- read_csv("../data/processed/ethan.csv")
-
-ethan <- ethan %>%
-  mutate(
-    date = ymd_hms(date),
-    year  = year(date),
-    month = month(date),
-    day   = day(date),
-    time  = format(date, "%H:%M:%S")
-  ) %>%
-  mutate(sender = case_when(
-    sender == "+19178035970" ~ "Ethan"
-  ))
-```
-
 
 
 ```{r}
@@ -92,26 +75,43 @@ library(shiny)
 # devtools::install_github("rasmusab/fullcalendar")
 library(fullcalendar)
 library(dplyr)
+library(bslib)
 
 ui <- fluidPage(
-  fullcalendarOutput("calendar"),
-  textOutput("message")
+  titlePanel("Hello Shiny!"),
+
+  sidebarLayout(
+    sidebarPanel(
+      card(
+          card_header("Date input"),
+          dateInput("date", "Select date", value = "2014-01-01")
+        )
+    ),
+
+    # Show a plot of the generated distribution
+    mainPanel(
+      fullcalendarOutput("calendar"),
+      textOutput("message")
+    )
+  )
 )
 
+
 server <- function(input, output, session) {
-  
-  df <- ethan %>%
+
+  df <- margaux %>%
     mutate(
       id = row_number(),
       start = date,
       title = substr(text, 1, 20)
     )
-  
+
   output$calendar <- renderFullcalendar({
     fullcalendar(df)
   })
 
 }
+
 
 shinyApp(ui, server)
 ```
