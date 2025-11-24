@@ -1,12 +1,12 @@
 ---
-title: "Member 2 First Name & Last Name Initial"
+title: "Calendar"
 ---
 
 ```{r}
 # MARGAUX 
 margaux <- readRDS("../data/processed/msg_df.rds")
 
-margaux <- margaux %>%
+margaux <- margaux %>%-
   mutate(
     date = ymd_hms(date),
     year  = year(date),

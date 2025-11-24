@@ -14,7 +14,7 @@ SELECT
     m.text
 FROM message m
 LEFT JOIN handle h ON m.handle_id = h.rowid
-WHERE h.id = '+19177941080' AND m.text IS NOT NULL
+WHERE h.id = '+19178035970' AND m.text IS NOT NULL
 ORDER BY m.date
 ;"
 
@@ -26,9 +26,9 @@ msg_df <- msg_df %>%
 
 
 # Save to CSV
-write_csv(msg_df, "~/Desktop/imessage_export.csv")
+write_csv(msg_df, "data/processed/ethan.csv")
 
 # Disconnect from database
 dbDisconnect(db)
 
-saveRDS(msg_df, "msg_df.rds")
+saveRDS(msg_df, "data/processed/ethan.rds")

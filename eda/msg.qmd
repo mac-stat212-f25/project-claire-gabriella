@@ -9,7 +9,7 @@ library(stringr)
 library(dplyr)
 library(lubridate)
 library(tidytext)
-df <- readRDS("df.RDS")
+df <- readRDS("../data/processed/msg_df.rds")
 
 df <- df %>%
   mutate(
