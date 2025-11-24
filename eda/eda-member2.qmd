@@ -3,10 +3,15 @@ title: "Calendar"
 ---
 
 ```{r}
+library(dplyr)
+library(lubridate)
+library(stringr)
+library(readr)
+
 # MARGAUX 
 margaux <- readRDS("../data/processed/msg_df.rds")
 
-margaux <- margaux %>%-
+margaux <- margaux %>%
   mutate(
     date = ymd_hms(date),
     year  = year(date),
@@ -18,14 +23,14 @@ margaux <- margaux %>%-
     sender == "+19177941080" ~ "Margaux"
   ))
 
-margaux$id <- 1:nrow(df)
-
-margaux_counts <- margaux %>%
-  unnest_tokens(word, text) %>% 
-  count(id, word, sort = TRUE)
-
-margaux_tf_idf <- margaux_counts %>%
-  bind_tf_idf(term = word, document = id, n)
+# margaux$id <- 1:nrow(df)
+# 
+# margaux_counts <- margaux %>%
+#   unnest_tokens(word, text) %>% 
+#   count(id, word, sort = TRUE)
+# 
+# margaux_tf_idf <- margaux_counts %>%
+#   bind_tf_idf(term = word, document = id, n)
 ```
 
 ```{r}
@@ -43,15 +48,6 @@ jade <- jade %>%
   mutate(sender = case_when(
     sender == "+16468304202" ~ "Jade"
   ))
-
-jade$id <- 1:nrow(jade)
-
-jade_counts <- jade %>%
-  unnest_tokens(word, text) %>% 
-  count(id, word, sort = TRUE)
-
-jade_tf_idf <- jade_counts %>%
-  bind_tf_idf(term = word, document = id, n)
 ```
 
 ```{r}
@@ -69,15 +65,6 @@ yami <- yami %>%
   mutate(sender = case_when(
     sender == "+19174710696" ~ "Yamila"
   ))
-
-yami$id <- 1:nrow(yami)
-
-yami_counts <- yami %>%
-  unnest_tokens(word, text) %>% 
-  count(id, word, sort = TRUE)
-
-yami_tf_idf <- yami_counts %>%
-  bind_tf_idf(term = word, document = id, n)
 ```
 
 ```{r}
@@ -95,15 +82,6 @@ ethan <- ethan %>%
   mutate(sender = case_when(
     sender == "+19178035970" ~ "Ethan"
   ))
-
-ethan$id <- 1:nrow(ethan)
-
-ethan_counts <- ethan %>%
-  unnest_tokens(word, text) %>% 
-  count(id, word, sort = TRUE)
-
-ethan_tf_idf <- ethan_counts %>%
-  bind_tf_idf(term = word, document = id, n)
 ```
 
 
