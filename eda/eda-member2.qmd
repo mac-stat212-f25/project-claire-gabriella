@@ -2,4 +2,139 @@
 title: "Member 2 First Name & Last Name Initial"
 ---
 
-Your exploratory data analysis of the team datasets go here.
+```{r}
+# MARGAUX 
+margaux <- readRDS("../data/processed/msg_df.rds")
+
+margaux <- margaux %>%
+  mutate(
+    date = ymd_hms(date),
+    year  = year(date),
+    month = month(date),
+    day   = day(date),
+    time  = format(date, "%H:%M:%S")
+  ) %>%
+  mutate(sender = case_when(
+    sender == "+19177941080" ~ "Margaux"
+  ))
+
+margaux$id <- 1:nrow(df)
+
+margaux_counts <- margaux %>%
+  unnest_tokens(word, text) %>% 
+  count(id, word, sort = TRUE)
+
+margaux_tf_idf <- margaux_counts %>%
+  bind_tf_idf(term = word, document = id, n)
+```
+
+```{r}
+# JADE
+jade <- read_csv("../data/processed/jade.csv")
+
+jade <- jade %>%
+  mutate(
+    date = ymd_hms(date),
+    year  = year(date),
+    month = month(date),
+    day   = day(date),
+    time  = format(date, "%H:%M:%S")
+  ) %>%
+  mutate(sender = case_when(
+    sender == "+16468304202" ~ "Jade"
+  ))
+
+jade$id <- 1:nrow(jade)
+
+jade_counts <- jade %>%
+  unnest_tokens(word, text) %>% 
+  count(id, word, sort = TRUE)
+
+jade_tf_idf <- jade_counts %>%
+  bind_tf_idf(term = word, document = id, n)
+```
+
+```{r}
+# YAMILA
+yami <- read_csv("../data/processed/yamila.csv")
+
+yami <- yami %>%
+  mutate(
+    date = ymd_hms(date),
+    year  = year(date),
+    month = month(date),
+    day   = day(date),
+    time  = format(date, "%H:%M:%S")
+  ) %>%
+  mutate(sender = case_when(
+    sender == "+19174710696" ~ "Yamila"
+  ))
+
+yami$id <- 1:nrow(yami)
+
+yami_counts <- yami %>%
+  unnest_tokens(word, text) %>% 
+  count(id, word, sort = TRUE)
+
+yami_tf_idf <- yami_counts %>%
+  bind_tf_idf(term = word, document = id, n)
+```
+
+```{r}
+# ETHAN
+ethan <- read_csv("../data/processed/ethan.csv")
+
+ethan <- ethan %>%
+  mutate(
+    date = ymd_hms(date),
+    year  = year(date),
+    month = month(date),
+    day   = day(date),
+    time  = format(date, "%H:%M:%S")
+  ) %>%
+  mutate(sender = case_when(
+    sender == "+19178035970" ~ "Ethan"
+  ))
+
+ethan$id <- 1:nrow(ethan)
+
+ethan_counts <- ethan %>%
+  unnest_tokens(word, text) %>% 
+  count(id, word, sort = TRUE)
+
+ethan_tf_idf <- ethan_counts %>%
+  bind_tf_idf(term = word, document = id, n)
+```
+
+
+
+```{r}
+library(shiny)
+# install.packages("devtools")
+# devtools::install_github("rasmusab/fullcalendar")
+library(fullcalendar)
+library(dplyr)
+
+ui <- fluidPage(
+  fullcalendarOutput("calendar"),
+  textOutput("message")
+)
+
+server <- function(input, output, session) {
+  
+  df <- ethan %>%
+    mutate(
+      id = row_number(),
+      start = date,
+      title = substr(text, 1, 20)
+    )
+  
+  output$calendar <- renderFullcalendar({
+    fullcalendar(df)
+  })
+
+}
+
+shinyApp(ui, server)
+```
+

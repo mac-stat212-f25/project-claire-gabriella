@@ -9,7 +9,7 @@ library(stringr)
 library(dplyr)
 library(lubridate)
 library(tidytext)
-df <- readRDS("msg_df.rds")
+df <- readRDS("df.RDS")
 
 df <- df %>%
   mutate(
@@ -42,10 +42,5 @@ df_joined <- df %>%
 df_tidy <- df %>% left_join(tfidf, by = "id")
 ```
 
-```{r}
-library(Matrix)
 
-tfidf_matrix <- tfidf %>%
-  cast_sparse(id, word, tf_idf)
-```
 
