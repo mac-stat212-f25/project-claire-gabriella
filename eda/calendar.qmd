@@ -3,63 +3,58 @@ title: "calendar"
 format: html
 ---
 
-```{r}
-library(toastui)
-calendar()
-```
+
 ```{r}
 library(shiny)
 library(toastui)
+library(dplyr)
+library(lubridate)
 
 ui <- fluidPage(
-  
-    tags$h2("calendar shiny example"),
-      fluidRow(
-        column(
-          width = 8,
-          calendarOutput("my_calendar")
-        ),
-        
-        column(
-          width = 4,
-          tags$b("Dates:"),
-          verbatimTextOutput("dates"),
-          tags$b("Clicked schedule:"),
-          verbatimTextOutput("click")
-        )
-      )
+  h2("Calendar with Messages"),
+  fluidRow(
+    column(8, calendarOutput("my_calendar"))
+  )
 )
 
 server <- function(input, output, session) {
-  output$my_calendar <- renderCalendar({
-    calendar(cal_demo_data(), navigation = TRUE) %>%
-      cal_props(
-          list(
-            id = 1,
-            name = "PERSO",
-            color = "white",
-            bgColor = "firebrick",
-            borderColor = "firebrick"
-          ),
-          list(
-            id = 2,
-            name = "WORK",
-            color = "white",
-            bgColor = "forestgreen",
-            borderColor = "forestgreen"
-          )
-  )
-})
-output$dates <- renderPrint({
-    input$my_calendar_dates
-output$click <- renderPrint({
-    input$my_calendar_click
-    })
 
-})
+  df <- read_csv("../data/processed/margaux.csv")  
+
+
+  calendar_data <- df %>%
+    mutate(
+      id = row_number(),
+      calendarId = 1,
+      title = text,
+      start = as.Date(date, tz = "UTC"),   
+      end = as.Date(date, tz = "UTC"),
+      isAllDay = TRUE,                     
+      isReadOnly = TRUE
+    ) %>%
+    select(id, calendarId, title, start, end, isAllDay, isReadOnly)
+
+  output$my_calendar <- renderCalendar({
+    calendar(calendar_data, navigation = TRUE, useDetailPopup = TRUE) %>%
+      cal_props(
+        list(
+          id = 1,
+          name = "Messages",
+          color = "white",
+          bgColor = "firebrick",
+          borderColor = "firebrick"
+        )
+      )
+  })
+
+  output$dates <- renderPrint({
+    input$my_calendar_dates
+  })
 }
-if (interactive())
-  shinyApp(ui, server)
+
+shinyApp(ui, server)
 ```
+
+
 
 
