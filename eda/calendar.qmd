@@ -1,0 +1,60 @@
+---
+title: "calendar"
+format: html
+---
+
+
+```{r}
+library(shiny)
+library(toastui)
+library(dplyr)
+library(lubridate)
+
+ui <- fluidPage(
+  h2("Calendar with Messages"),
+  fluidRow(
+    column(8, calendarOutput("my_calendar"))
+  )
+)
+
+server <- function(input, output, session) {
+
+  df <- read_csv("../data/processed/margaux.csv")  
+
+
+  calendar_data <- df %>%
+    mutate(
+      id = row_number(),
+      calendarId = 1,
+      title = text,
+      start = as.Date(date, tz = "UTC"),   
+      end = as.Date(date, tz = "UTC"),
+      isAllDay = TRUE,                     
+      isReadOnly = TRUE
+    ) %>%
+    select(id, calendarId, title, start, end, isAllDay, isReadOnly)
+
+  output$my_calendar <- renderCalendar({
+    calendar(calendar_data, navigation = TRUE, useDetailPopup = TRUE) %>%
+      cal_props(
+        list(
+          id = 1,
+          name = "Messages",
+          color = "white",
+          bgColor = "firebrick",
+          borderColor = "firebrick"
+        )
+      )
+  })
+
+  output$dates <- renderPrint({
+    input$my_calendar_dates
+  })
+}
+
+shinyApp(ui, server)
+```
+
+
+
+
