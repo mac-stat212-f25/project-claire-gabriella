@@ -9,6 +9,7 @@ library(shiny)
 library(toastui)
 library(dplyr)
 library(lubridate)
+library(readr)
 
 ui <- fluidPage(
   h2("Calendar with Messages"),
@@ -19,7 +20,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-  df <- read_csv("../data/processed/margaux.csv")  
+  df <- readRDS("../data/processed/margaux.RDS")  
 
 
   calendar_data <- df %>%
@@ -29,10 +30,9 @@ server <- function(input, output, session) {
       title = text,
       start = as.Date(date, tz = "UTC"),   
       end = as.Date(date, tz = "UTC"),
-      isAllDay = TRUE,                     
       isReadOnly = TRUE
     ) %>%
-    select(id, calendarId, title, start, end, isAllDay, isReadOnly)
+    select(id, calendarId, title, start, end, isReadOnly)
 
   output$my_calendar <- renderCalendar({
     calendar(calendar_data, navigation = TRUE, useDetailPopup = TRUE) %>%
