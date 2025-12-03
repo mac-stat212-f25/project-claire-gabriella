@@ -3,7 +3,6 @@ title: "calendar"
 format: html
 ---
 
-
 ```{r}
 library(shiny)
 library(toastui)
@@ -12,30 +11,40 @@ library(lubridate)
 library(readr)
 
 ui <- fluidPage(
-  h2("Calendar with Messages"),
+  h2("iMessage Calendar"),
   fluidRow(
-    column(8, calendarOutput("my_calendar"))
+    column(10, calendarOutput("my_calendar")),
+    column(2, verbatimTextOutput("dates"))
   )
 )
 
 server <- function(input, output, session) {
 
-  df <- readRDS("../data/processed/margaux.RDS")  
+  # 1. Load Data from your RDS file
+  # ⚠️ IMPORTANT: Ensure this path is correct relative to where you run the app!
+  df <- readRDS("../data/processed/hayden.rds") 
 
-
+  # 2. Process Data for the Calendar
   calendar_data <- df %>%
     mutate(
       id = row_number(),
-      calendarId = 1,
+      calendarId = 1, # Linked to the 'Messages' cal_props below
       title = text,
-      start = as.Date(date, tz = "UTC"),   
-      end = as.Date(date, tz = "UTC"),
+      # Convert 'date' column to proper POSIXct format for toastui
+      start = as.POSIXct(date, tz = "UTC"), 
+      end = as.POSIXct(date, tz = "UTC"),
       isReadOnly = TRUE
     ) %>%
     select(id, calendarId, title, start, end, isReadOnly)
 
+  # 3. Render the Calendar Widget
   output$my_calendar <- renderCalendar({
-    calendar(calendar_data, navigation = TRUE, useDetailPopup = TRUE) %>%
+    calendar(
+      view = "month", # Set a default view
+      navigation = TRUE,
+      useDetailPopup = TRUE
+    ) %>%
+      # Define Calendar Properties (The container for your data, ID must match calendarId=1)
       cal_props(
         list(
           id = 1,
@@ -44,16 +53,29 @@ server <- function(input, output, session) {
           bgColor = "firebrick",
           borderColor = "firebrick"
         )
+      ) %>%
+      # Add the Schedules (The actual events/data)
+      cal_schedules(
+        calendar_data,
+        id = "id",
+        calendarId = "calendarId",
+        title = "title",
+        start = "start",
+        end = "end",
+        category = "allday" # Events will show up in the all-day header row
       )
   })
 
+  # Optional: Output for displaying calendar interaction data
   output$dates <- renderPrint({
     input$my_calendar_dates
   })
 }
 
+if (interactive())
 shinyApp(ui, server)
 ```
+
 
 
 
