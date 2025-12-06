@@ -20,31 +20,25 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-  # 1. Load Data from your RDS file
-  # ⚠️ IMPORTANT: Ensure this path is correct relative to where you run the app!
   df <- readRDS("../data/processed/hayden.rds") 
 
-  # 2. Process Data for the Calendar
   calendar_data <- df %>%
     mutate(
       id = row_number(),
-      calendarId = 1, # Linked to the 'Messages' cal_props below
+      calendarId = 1, 
       title = text,
-      # Convert 'date' column to proper POSIXct format for toastui
       start = as.POSIXct(date, tz = "UTC"), 
       end = as.POSIXct(date, tz = "UTC"),
       isReadOnly = TRUE
     ) %>%
     select(id, calendarId, title, start, end, isReadOnly)
 
-  # 3. Render the Calendar Widget
   output$my_calendar <- renderCalendar({
     calendar(
       view = "month", # Set a default view
       navigation = TRUE,
       useDetailPopup = TRUE
     ) %>%
-      # Define Calendar Properties (The container for your data, ID must match calendarId=1)
       cal_props(
         list(
           id = 1,
@@ -66,7 +60,6 @@ server <- function(input, output, session) {
       )
   })
 
-  # Optional: Output for displaying calendar interaction data
   output$dates <- renderPrint({
     input$my_calendar_dates
   })

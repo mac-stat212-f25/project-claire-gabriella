@@ -8,7 +8,6 @@ Low TF-IDF scores are given to words that are either not very frequent in the do
 
 
 ```{r eval=FALSE}
-# Code to clean and convert into matrix
 library(readr)
 library(stringr)
 library(dplyr)
@@ -16,7 +15,7 @@ library(lubridate)
 library(tidytext)
 library(ggplot2)
 
-df <- readRDS("../data/processed/jade.rds")
+df <- readRDS("../data/processed/ethan.rds")
 
 df <- df %>%
   mutate(
@@ -59,10 +58,63 @@ df_joined <- df %>%
 df_tidy <- df %>% left_join(tfidf, by = "id")
 ```
 
-```{r eval=FALSE}
-library(Matrix)
 
-tfidf_matrix <- tfidf %>%
-  cast_sparse(id, word, tf_idf)
+```{r}
+library(dplyr)
+library(tidytext)
+
+# Display the top 5 terms for each document
+top_terms_by_doc <- df_tidy |>
+  group_by(id) |>
+  slice_max(order_by = tf_idf, n = 5) |>
+  ungroup() |>
+  arrange(id, desc(tf_idf))
+
+print(top_terms_by_doc)
+
+# Calculate the total TF-IDF score for each term
+overall_top_terms <- tidy_tfidf |>
+  group_by(term) |>
+  summarise(total_tfidf = sum(value)) |>
+  arrange(desc(total_tfidf))
+
+# Display the top 20
+head(overall_top_terms, 20)
+
+library(ggplot2)
+
+# Create a bar plot of the top 15 overall terms
+overall_top_terms |>
+  top_n(15, total_tfidf) |>
+  ggplot(aes(x = reorder(term, total_tfidf), y = total_tfidf)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Top 15 Terms by Total TF-IDF Score", x = "Term", y = "Total TF-IDF")
+
+library(wordcloud)
+
+# Convert the overall top terms data to a frequency table
+word_freq <- setNames(overall_top_terms$total_tfidf, overall_top_terms$term)
+
+# Plot the word cloud
+wordcloud(
+  words = names(word_freq),
+  freq = word_freq,
+  max.words = 100, # Adjust for better display
+  random.order = FALSE,
+  colors = brewer.pal(8, "Dark2") # Use a color palette
+)
+
+# Example for a subset: Top 20 terms across 5 documents
+top_terms_for_plot <- tidy_tfidf |>
+  filter(document %in% unique(tidy_tfidf$document)[1:5]) |> # Select first 5 documents
+  filter(term %in% overall_top_terms$term[1:20]) # Select top 20 overall terms
+
+ggplot(top_terms_for_plot, aes(x = term, y = document, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(fill = "TF-IDF Score")
 ```
+
 
