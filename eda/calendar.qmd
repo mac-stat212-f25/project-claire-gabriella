@@ -1,0 +1,75 @@
+---
+title: "calendar"
+format: html
+---
+
+```{r}
+library(shiny)
+library(toastui)
+library(dplyr)
+library(lubridate)
+library(readr)
+
+ui <- fluidPage(
+  h2("iMessage Calendar"),
+  fluidRow(
+    column(10, calendarOutput("my_calendar")),
+    column(2, verbatimTextOutput("dates"))
+  )
+)
+
+server <- function(input, output, session) {
+
+  df <- readRDS("../data/processed/hayden.rds") 
+
+  calendar_data <- df %>%
+    mutate(
+      id = row_number(),
+      calendarId = 1, 
+      title = text,
+      start = as.POSIXct(date, tz = "UTC"), 
+      end = as.POSIXct(date, tz = "UTC"),
+      isReadOnly = TRUE
+    ) %>%
+    select(id, calendarId, title, start, end, isReadOnly)
+
+  output$my_calendar <- renderCalendar({
+    calendar(
+      view = "month", # Set a default view
+      navigation = TRUE,
+      useDetailPopup = TRUE
+    ) %>%
+      cal_props(
+        list(
+          id = 1,
+          name = "Messages",
+          color = "white",
+          bgColor = "firebrick",
+          borderColor = "firebrick"
+        )
+      ) %>%
+      # Add the Schedules (The actual events/data)
+      cal_schedules(
+        calendar_data,
+        id = "id",
+        calendarId = "calendarId",
+        title = "title",
+        start = "start",
+        end = "end",
+        category = "allday" # Events will show up in the all-day header row
+      )
+  })
+
+  output$dates <- renderPrint({
+    input$my_calendar_dates
+  })
+}
+
+if (interactive())
+shinyApp(ui, server)
+```
+
+
+
+
+

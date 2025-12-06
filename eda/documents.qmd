@@ -1,0 +1,42 @@
+---
+title: "documents"
+format: html
+---
+
+```{r}
+library(readr)
+library(stringr)
+library(dplyr)
+library(lubridate)
+library(tidytext)
+library(ggplot2)
+
+one <- readRDS("../data/processed/margaux.rds")
+
+one <- one %>%
+  mutate(
+    date = ymd_hms(date),
+    year  = year(date),
+    month = month(date),
+    day   = day(date),
+    time  = format(date, "%H:%M:%S")
+  ) %>%
+  mutate(sender = "Margaux")
+
+two <- readRDS("../data/processed/hayden.rds")
+
+two <- two %>%
+  mutate(
+    date = ymd_hms(date),
+    year  = year(date),
+    month = month(date),
+    day   = day(date),
+    time  = format(date, "%H:%M:%S")
+  ) %>%
+  mutate(sender = "Hayden")
+
+combined <- bind_rows(one, two)
+
+
+```
+

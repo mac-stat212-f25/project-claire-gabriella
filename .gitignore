@@ -69,3 +69,7 @@ _freeze/
 *.log
 *.aux
 *.toc
+/data/processed
+data/raw/exporting.R
+data/raw/exporting.R
+*.R

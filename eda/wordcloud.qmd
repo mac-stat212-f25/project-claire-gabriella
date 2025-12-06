@@ -1,0 +1,57 @@
+---
+title: "wordcloud"
+format: html
+---
+
+```{r}
+library(readr)
+library(stringr)
+library(dplyr)
+library(lubridate)
+library(tidytext)
+library(ggplot2)
+
+df <- readRDS("../data/processed/ethan.rds")
+df <- df %>%
+  mutate(
+    date = ymd_hms(date),
+    year  = year(date),
+    month = month(date),
+    day   = day(date),
+    time  = format(date, "%H:%M:%S")
+  )
+
+df$id <- 1:nrow(df)
+
+word_counts <- df %>%
+  unnest_tokens(word, text) %>% 
+  count(id, word, sort = TRUE)
+
+word_counts <- word_counts %>%
+  bind_tf_idf(term = word, document = id, n)
+
+word_counts <- word_counts |> 
+  filter(str_length(word) > 5)
+```
+
+
+```{r}
+library("tm")
+library("SnowballC")
+library("wordcloud")
+library("RColorBrewer")
+
+word <- word_counts |>
+  select(word)
+
+dtm <- TermDocumentMatrix(word)
+m <- as.matrix(dtm)
+v <- sort(rowSums(m), decreasing = TRUE)
+d <- data.frame(word = names(v), freq = v)
+d <- d |> 
+  mutate(word = str_replace_all(word, "[[:punct:]]", "")) 
+
+pal <- brewer.pal(9,"BuGn")
+pal <- pal[-(1:4)]
+wordcloud(d$word,d$freq,c(8,.3),2,,FALSE,,.15,pal)
+```
