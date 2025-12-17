@@ -64,6 +64,7 @@ book:
         - eda/eda-member1.qmd
         - eda/eda-member2.qmd
         - eda/eda-member3.qmd
+        - eda/msg.qmd
 
   appendices:
   - appx/proposal.qmd
