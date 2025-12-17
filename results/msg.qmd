@@ -1,0 +1,214 @@
+---
+title: "iMessage SQL Project"
+author: "Claire Kuno and Gabriella Nieves"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+format: 
+  html:
+    code-tools: 
+      source: true    
+      toggle: false   
+      caption: none   
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+abstract: "This is an exploratory analysis of our iMessage datbase using SQL query's to scrape the information and tidyverse to visualize emotional patterns and time patterns. Our analysis of our database concluded in trends of positive words being more frequently used in the past years compared to years before and words of anticipation being the most common emotion of words. The most frequent time messages were sent was 3PM-2AM. Overall, texts of most frequency have to with making plans. Future work includes joining in more iMessage data and more detailed emotional lexicon."
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r echo = FALSE, results = "hide", message=FALSE, warnings = FALSE}
+library(readr)
+library(stringr)
+library(dplyr)
+library(lubridate)
+library(tidytext)
+library(textdata)
+library(dplyr)
+library(tidytext)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(tidytext)
+library(ggplot2)
+library(zoo)
+library(dplyr)
+library(tidytext)
+library(wordcloud)
+library(RColorBrewer)
+library(stringr)
+library(tidyverse)
+
+df <- readRDS("../msg_df.rds")
+
+df <- df %>%
+  mutate(
+    date = ymd_hms(date),
+    year  = year(date),
+    month = month(date),
+    day   = day(date),
+    time  = format(date, "%H:%M:%S")
+  )
+
+df$id <- 1:nrow(df)
+
+word_counts <- df %>%
+  unnest_tokens(word, text) %>% 
+  count(id, word, sort = TRUE)
+
+word_counts %>%
+  bind_tf_idf(term = word, document = id, n)
+
+df$id <- seq_len(nrow(df))   
+tfidf <- df %>%
+  unnest_tokens(word, text) %>%
+  count(id, word) %>%
+  bind_tf_idf(word, id, n)
+df_joined <- df %>%
+  left_join(tfidf %>% group_by(id) %>% summarise(tfidf = pick(everything())),
+            by = "id")
+df_tidy <- df %>% left_join(tfidf, by = "id")
+```
+
+## Most Frequently Used Word Cloud
+
+```{r echo = FALSE, warnings = FALSE, message =FALSE}
+
+
+df_tidy %>%
+  anti_join(stop_words, by = "word") %>%
+  filter(
+    !str_detect(word, "^[0-9]+$"),
+    nchar(word) > 2
+  ) %>%
+  count(word, sort = TRUE) %>%
+  with(wordcloud(
+    words = word,
+    freq = n,
+    max.words = 120,
+    scale = c(4, 0.8),
+    random.order = FALSE,
+    rot.per = 0.25,
+    colors = brewer.pal(8, "Set2")
+  ))
+ 
+```
+
+## Positive or Negative Messages in Past Two Years
+
+```{r echo=FALSE, warnings = FALSE, message =FALSE}
+
+daily_sentiment <- df_tidy %>%
+  inner_join(get_sentiments("bing"), by = "word") %>%
+  mutate(sentiment = ifelse(sentiment == "positive", 1, -1)) %>%
+  group_by(date = as.Date(date)) %>%
+  summarise(net_sentiment = sum(sentiment)) %>%
+  arrange(date) %>%
+  mutate(
+    smoothed = rollmean(net_sentiment, k = 7, fill = NA),
+    polarity = ifelse(net_sentiment >= 0, "Positive", "Negative")
+  )
+
+daily_sentiment %>%
+  filter(!is.na(smoothed)) %>%
+ggplot(aes(x = date, y = net_sentiment)) +
+  geom_col(aes(fill = polarity), alpha = 0.8) +
+  geom_line(aes(y = smoothed), linewidth = 1.2, color = "black") +
+  geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
+  scale_fill_manual(values = c("Positive" = "#4CAF50",
+                               "Negative" = "#E57373")) +
+  labs(
+    title = "Daily Net Sentiment in Messages",
+    subtitle = "Bars show daily sentiment; line shows 7-day rolling average",
+    x = "Date",
+    y = "Net Sentiment",
+    fill = "Polarity"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    legend.position = "top",
+    panel.grid.minor = element_blank()
+  )
+
+```
+
+## Emotions of Messages
+
+```{r echo = FALSE, warnings = FALSE, message=FALSE}
+
+emotion_dist <- df_tidy %>%
+  inner_join(get_sentiments("nrc"), by = "word", relationship =
+  "many-to-many") %>%
+  filter(!sentiment %in% c("positive", "negative")) %>%  # optional but cleaner
+  count(sentiment, sort = TRUE) %>%
+  mutate(
+    percent = n / sum(n),
+    sentiment = reorder(sentiment, percent)
+  )
+
+emotion_palette <- c(
+  anger = "#D55E00",
+  fear = "#CC79A7",
+  sadness = "#0072B2",
+  disgust = "#009E73",
+  joy = "#F0E442",
+  trust = "#56B4E9",
+  anticipation = "#E69F00",
+  surprise = "#999999"
+)
+
+ggplot(emotion_dist,
+       aes(x = sentiment, y = percent, fill = sentiment)) +
+  geom_col(width = 0.7, alpha = 0.9) +
+  geom_text(
+    aes(label = percent(percent, accuracy = 0.1)),
+    hjust = -0.1,
+    size = 4
+  ) +
+  coord_flip() +
+  scale_y_continuous(labels = percent_format(),
+                     expand = expansion(mult = c(0, 0.1))) +
+  scale_fill_manual(values = emotion_palette) +
+  labs(
+    title = "Emotional Composition of Messages",
+    subtitle = "Distribution of NRC emotion categories across all words",
+    x = NULL,
+    y = "Proportion of Emotion-Labeled Words"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position = "none",
+    panel.grid.major.y = element_blank(),
+    plot.title = element_text(face = "bold")
+  )
+
+```
+
+## How Often are We Texting? And at What Time?
+
+```{r echo= FALSE, warnings = FALSE, message =FALSE}
+top20_words <- df_tidy %>%
+  anti_join(stop_words, by = "word") %>%
+  count(word, sort = TRUE) %>%
+  slice_head(n = 20) %>%
+  pull(word)
+
+df_tidy %>%
+  mutate(hour = as.integer(substr(time, 1, 2))) %>%
+  filter(word %in% top20_words) %>%
+  count(hour, word) %>%
+  group_by(hour) %>%
+  slice_max(n, n = 5) %>%
+  ungroup() %>%
+  ggplot(aes(x = hour, y = reorder(word, n), size = n)) +
+  geom_point(alpha = 0.7, color = "#6A5ACD") +
+  labs(
+    title = "Most Common Words by Hour of Day",
+    x = "Hour",
+    y = NULL,
+    size = "Frequency"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+

@@ -22,7 +22,7 @@ number-depth: 2
 
 book:
   title: "Project Title"
-  author: ["Member 1 first and last name initial", "Member 2 first and last name initial", "Member 3 first and last name initial"]
+  author: ["Gabriella N.", "Claire K."]
   date: today  # use today to update date published based on last time project was edited
   date-format: full
   # favicon: path/to/favorite-logo.png
@@ -45,7 +45,7 @@ book:
       # footer text
 
   sidebar:
-    title: "Team Name"
+    title: "City Girls"
     logo: assets/sidebar-logo.png
     logo-alt: "Random negative space illustration"
     collapse-level: 2
@@ -64,6 +64,7 @@ book:
         - eda/eda-member1.qmd
         - eda/eda-member2.qmd
         - eda/eda-member3.qmd
+        - eda/msg.qmd
 
   appendices:
   - appx/proposal.qmd

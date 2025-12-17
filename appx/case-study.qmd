@@ -2,4 +2,15 @@
 title: "Case Study"
 ---
 
-Your case study go here.
+```{r}
+library(readr)
+MTA_Daily_Ridership_2020_2025<- read_csv("../data/raw/MTA_Daily_Ridership_Data__2020_-_2025_20251027.csv")
+```
+```{r}
+library(osmdata)
+library(tidyverse)
+nyc <- opq(bbox = "New York City") %>%
+  add_osm_feature(key = "railway", value = "subway") %>%
+  osmdata_sf()
+```
+
